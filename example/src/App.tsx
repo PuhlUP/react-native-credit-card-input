@@ -110,7 +110,7 @@ export default function Example() {
           onChange={setFormData}
           onFocusField={setFocusedField}
           // Add custom error messages for LiteCreditCardInput if supported
-          // errorMessages={errorMessages}
+          errorMessages={errorMessages}
         />
       ) : (
         <CreditCardInput
