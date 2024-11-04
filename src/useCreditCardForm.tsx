@@ -99,7 +99,8 @@ const formatCardCVC = (cvc: string, cvcMaxLength: number) => {
 };
 
 export const useCreditCardForm = (
-  onChange: (formData: CreditCardFormData) => void
+  onChange: (formData: CreditCardFormData) => void,
+  requiresName: boolean = true // Add this parameter with default value
 ) => {
   const [formState, setFormState] = useState<CreditCardFormState>({
     number: 'incomplete',
@@ -131,7 +132,9 @@ export const useCreditCardForm = (
       //   newValues.cvc,
       //   numberValidation.card?.code.size || 3
       // );
-      let nameValidation = newValues.name.trim().length > 0;
+      let nameValidation = requiresName
+        ? newValues.name.trim().length > 0
+        : true;
 
       const cvcMaxLength = numberValidation.card?.code.size || 3;
       const cardNumberGaps = numberValidation.card?.gaps || [4, 8, 12];
@@ -181,7 +184,7 @@ export const useCreditCardForm = (
         status: newFormState,
       });
     },
-    [values, onChange]
+    [values, onChange, requiresName] // Include requiresName in dependencies
   );
 
   return {

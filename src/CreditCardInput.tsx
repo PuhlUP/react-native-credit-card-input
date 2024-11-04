@@ -49,6 +49,7 @@ interface Props {
     };
     name?: string;
   };
+  requiresName?: boolean; // Add this prop
 }
 
 const s = StyleSheet.create({
@@ -123,48 +124,53 @@ const CreditCardInput = (props: Props) => {
     onFocusField = () => {},
     testID,
     errorMessages = {},
+    requiresName = false, // Default to true
   } = props;
 
   const {
     values,
     errors: formErrors,
     onChangeValue,
-  } = useCreditCardForm(onChange);
+  } = useCreditCardForm(onChange, requiresName); // Pass requiresName to hook
 
   const nameInput = useRef<TextInput>(null);
   const numberInput = useRef<TextInput>(null);
 
   useEffect(() => {
-    if (autoFocus) nameInput.current?.focus();
-  }, [autoFocus]);
+    if (autoFocus) {
+      requiresName ? nameInput.current?.focus() : numberInput.current?.focus();
+    }
+  }, [autoFocus, requiresName]);
 
   return (
     <View
       style={[s.container, style]}
       testID={testID}
     >
-      <View style={[s.nameInput]}>
-        <Text style={[s.inputLabel, labelStyle]}>{labels.name}</Text>
-        <TextInput
-          ref={nameInput}
-          style={[
-            s.input,
-            inputStyle,
-            formErrors.name === 'invalid' ? s.invalidInput : null,
-          ]}
-          placeholderTextColor={placeholderColor}
-          placeholder={placeholders.name}
-          value={values.name}
-          onChangeText={(v) => onChangeValue('name', v)}
-          onFocus={() => onFocusField('name')}
-          autoCorrect={false}
-          underlineColorAndroid={'transparent'}
-          testID="CC_NAME"
-        />
-        {formErrors.name === 'invalid' && errorMessages.name && (
-          <Text style={s.errorText}>{errorMessages.name}</Text>
-        )}
-      </View>
+      {requiresName && (
+        <View style={[s.nameInput]}>
+          <Text style={[s.inputLabel, labelStyle]}>{labels.name}</Text>
+          <TextInput
+            ref={nameInput}
+            style={[
+              s.input,
+              inputStyle,
+              formErrors.name === 'invalid' ? s.invalidInput : null,
+            ]}
+            placeholderTextColor={placeholderColor}
+            placeholder={placeholders.name}
+            value={values.name}
+            onChangeText={(v) => onChangeValue('name', v)}
+            onFocus={() => onFocusField('name')}
+            autoCorrect={false}
+            underlineColorAndroid={'transparent'}
+            testID="CC_NAME"
+          />
+          {formErrors.name === 'invalid' && errorMessages.name && (
+            <Text style={s.errorText}>{errorMessages.name}</Text>
+          )}
+        </View>
+      )}
 
       <View style={[s.numberInput]}>
         <Text style={[s.inputLabel, labelStyle]}>{labels.number}</Text>

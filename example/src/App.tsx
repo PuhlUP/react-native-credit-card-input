@@ -115,6 +115,7 @@ export default function Example() {
       ) : (
         <CreditCardInput
           autoFocus
+          requiresName
           style={s.cardInput}
           onChange={setFormData}
           onFocusField={setFocusedField}
