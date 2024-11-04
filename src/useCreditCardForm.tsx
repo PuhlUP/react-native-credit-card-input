@@ -119,6 +119,64 @@ export const useCreditCardForm = (
 
   const [errors, setErrors] = useState<CreditCardFormErrors>({});
 
+  const validateAll = useCallback(() => {
+    const numberValidation = cardValidator.number(values.number);
+    // const expiryValidation = cardValidator.expirationDate(values.expiry);
+    // const cvcValidation = cardValidator.cvv(
+    //   values.cvc,
+    //   numberValidation.card?.code.size || 3
+    // );
+    const nameValidation = requiresName ? values.name.trim().length > 0 : true;
+
+    const cvcMaxLength = numberValidation.card?.code.size || 3;
+    const cardNumberGaps = numberValidation.card?.gaps || [4, 8, 12];
+    const cardNumberMaxLength = Math.max(
+      ...(numberValidation.card?.lengths || [16])
+    );
+
+    const newFormattedValues = {
+      number: formatCardNumber(
+        values.number,
+        cardNumberMaxLength,
+        cardNumberGaps
+      ),
+      expiry: formatCardExpiry(values.expiry),
+      cvc: formatCardCVC(values.cvc, cvcMaxLength),
+      name: values.name,
+      type: numberValidation.card?.type as CreditCardIssuer,
+    };
+
+    const newFormState: CreditCardFormState = {
+      number: toStatus(
+        cardValidator.number(removeNonNumber(newFormattedValues.number))
+      ),
+      expiry: toStatus(cardValidator.expirationDate(newFormattedValues.expiry)),
+      cvc: toStatus(cardValidator.cvv(newFormattedValues.cvc, cvcMaxLength)),
+      name: nameValidation ? 'valid' : 'invalid',
+    };
+
+    const newErrors: CreditCardFormErrors = {
+      number: newFormState.number === 'invalid' ? 'invalid' : undefined,
+      expiry: newFormState.expiry === 'invalid' ? 'invalid' : undefined,
+      cvc: newFormState.cvc === 'invalid' ? 'invalid' : undefined,
+      name: newFormState.name === 'invalid' ? 'invalid' : undefined,
+    };
+
+    setErrors(newErrors);
+    setValues(newFormattedValues);
+    setFormState(newFormState);
+
+    onChange({
+      valid:
+        newFormState.number === 'valid' &&
+        newFormState.expiry === 'valid' &&
+        newFormState.cvc === 'valid' &&
+        newFormState.name === 'valid',
+      values: newFormattedValues,
+      status: newFormState,
+    });
+  }, [values, onChange, requiresName]);
+
   const onChangeValue = useCallback(
     (field: CreditCardFormField, value: string) => {
       const newValues = {
@@ -132,7 +190,7 @@ export const useCreditCardForm = (
       //   newValues.cvc,
       //   numberValidation.card?.code.size || 3
       // );
-      let nameValidation = requiresName
+      const nameValidation = requiresName
         ? newValues.name.trim().length > 0
         : true;
 
@@ -190,6 +248,7 @@ export const useCreditCardForm = (
   );
 
   return {
+    validateAll,
     values,
     status: formState,
     errors,
