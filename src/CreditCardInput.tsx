@@ -31,7 +31,9 @@ interface Props {
     cvc: string;
     name?: string;
   };
+  formData?: CreditCardFormData;
   onChange: (formData: CreditCardFormData) => void;
+  focusedField?: CreditCardFormField;
   onFocusField?: (field: CreditCardFormField) => void;
   testID?: string;
   errorMessages?: {
@@ -52,7 +54,7 @@ interface Props {
   requiresName?: boolean; // Add this prop
 }
 
-const s = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     paddingVertical: 15,
     paddingHorizontal: 15,
@@ -120,18 +122,16 @@ const CreditCardInput = (props: Props) => {
       cvc: 'CVC',
       name: 'JOHN DOE',
     },
+    formData,
     onChange = () => {},
+    focusedField,
     onFocusField = () => {},
     testID,
     errorMessages = {},
     requiresName = false, // Default to true
   } = props;
 
-  const {
-    values,
-    errors: formErrors,
-    onChangeValue,
-  } = useCreditCardForm(onChange, requiresName); // Pass requiresName to hook
+  const { values, onChangeValue } = useCreditCardForm(onChange, requiresName); // Pass requiresName to hook
 
   const nameInput = useRef<TextInput>(null);
   const numberInput = useRef<TextInput>(null);
@@ -142,21 +142,49 @@ const CreditCardInput = (props: Props) => {
     }
   }, [autoFocus, requiresName]);
 
+  const handleInputStyle = (field: CreditCardFormField) => {
+    return [
+      styles.input,
+      inputStyle,
+      formData?.status[field] === 'invalid' ||
+      (formData?.status[field] === 'incomplete' &&
+        focusedField !== field &&
+        formData?.values[field])
+        ? styles.invalidInput
+        : null,
+    ];
+  };
+
+  const handleInputErrorText = (field: CreditCardFormField) => {
+    if (formData?.status[field] && errorMessages[field]) {
+      return (
+        <Text style={styles.errorText}>
+          {formData?.status[field] === 'invalid'
+            ? typeof errorMessages[field] !== 'string' &&
+              errorMessages[field]?.invalid
+            : formData?.status[field] === 'incomplete' &&
+                focusedField !== field &&
+                formData?.values[field]
+              ? typeof errorMessages[field] !== 'string' &&
+                errorMessages[field]?.incomplete
+              : null}
+        </Text>
+      );
+    }
+    return null;
+  };
+
   return (
     <View
-      style={[s.container, style]}
+      style={[styles.container, style]}
       testID={testID}
     >
       {requiresName && (
-        <View style={[s.nameInput]}>
-          <Text style={[s.inputLabel, labelStyle]}>{labels.name}</Text>
+        <View style={[styles.nameInput]}>
+          <Text style={[styles.inputLabel, labelStyle]}>{labels.name}</Text>
           <TextInput
             ref={nameInput}
-            style={[
-              s.input,
-              inputStyle,
-              formErrors.name === 'invalid' ? s.invalidInput : null,
-            ]}
+            style={handleInputStyle('name')}
             placeholderTextColor={placeholderColor}
             placeholder={placeholders.name}
             value={values.name}
@@ -166,25 +194,18 @@ const CreditCardInput = (props: Props) => {
             underlineColorAndroid={'transparent'}
             testID="CC_NAME"
           />
-          {formErrors.name === 'invalid' && errorMessages.name && (
-            <Text style={s.errorText}>{errorMessages.name}</Text>
+          {formData?.status.name === 'invalid' && errorMessages.name && (
+            <Text style={styles.errorText}>{errorMessages.name}</Text>
           )}
         </View>
       )}
 
-      <View style={[s.numberInput]}>
-        <Text style={[s.inputLabel, labelStyle]}>{labels.number}</Text>
+      <View style={[styles.numberInput]}>
+        <Text style={[styles.inputLabel, labelStyle]}>{labels.number}</Text>
         <TextInput
           ref={numberInput}
           keyboardType="numeric"
-          style={[
-            s.input,
-            inputStyle,
-            formErrors.number === 'invalid' ||
-            formErrors.number === 'incomplete'
-              ? s.invalidInput
-              : null,
-          ]}
+          style={handleInputStyle('number')}
           placeholderTextColor={placeholderColor}
           placeholder={placeholders.number}
           value={values.number}
@@ -196,25 +217,15 @@ const CreditCardInput = (props: Props) => {
           textContentType="creditCardNumber" // Enable auto-suggestion on iOS
           autoComplete="cc-number" // Enable auto-suggestion on Android
         />
-        {formErrors.number && errorMessages.number && (
-          <Text style={s.errorText}>
-            {formErrors.number === 'invalid'
-              ? errorMessages.number.invalid
-              : errorMessages.number.incomplete}
-          </Text>
-        )}
+        {handleInputErrorText('number')}
       </View>
 
-      <View style={[s.extraContainer]}>
-        <View style={s.expiryInputContainer}>
-          <Text style={[s.inputLabel, labelStyle]}>{labels.expiry}</Text>
+      <View style={[styles.extraContainer]}>
+        <View style={styles.expiryInputContainer}>
+          <Text style={[styles.inputLabel, labelStyle]}>{labels.expiry}</Text>
           <TextInput
             keyboardType="numeric"
-            style={[
-              s.input,
-              inputStyle,
-              formErrors.expiry === 'invalid' ? s.invalidInput : null,
-            ]}
+            style={handleInputStyle('expiry')}
             placeholderTextColor={placeholderColor}
             placeholder={placeholders.expiry}
             value={values.expiry}
@@ -224,26 +235,14 @@ const CreditCardInput = (props: Props) => {
             underlineColorAndroid={'transparent'}
             testID="CC_EXPIRY"
           />
-          {formErrors.expiry && errorMessages.expiry && (
-            <Text style={s.errorText}>
-              {formErrors.expiry === 'invalid'
-                ? errorMessages.expiry.invalid
-                : errorMessages.expiry.incomplete}
-            </Text>
-          )}
+          {handleInputErrorText('expiry')}
         </View>
 
-        <View style={s.cvcInputContainer}>
-          <Text style={[s.inputLabel, labelStyle]}>{labels.cvc}</Text>
+        <View style={styles.cvcInputContainer}>
+          <Text style={[styles.inputLabel, labelStyle]}>{labels.cvc}</Text>
           <TextInput
             keyboardType="numeric"
-            style={[
-              s.input,
-              inputStyle,
-              formErrors.cvc === 'invalid' || formErrors.cvc === 'incomplete'
-                ? s.invalidInput
-                : null,
-            ]}
+            style={handleInputStyle('cvc')}
             placeholderTextColor={placeholderColor}
             placeholder={placeholders.cvc}
             value={values.cvc}
@@ -253,13 +252,7 @@ const CreditCardInput = (props: Props) => {
             underlineColorAndroid={'transparent'}
             testID="CC_CVC"
           />
-          {formErrors.cvc && errorMessages.cvc && (
-            <Text style={s.errorText}>
-              {formErrors.cvc === 'invalid'
-                ? errorMessages.cvc.invalid
-                : errorMessages.cvc.incomplete}
-            </Text>
-          )}
+          {handleInputErrorText('cvc')}
         </View>
       </View>
     </View>
