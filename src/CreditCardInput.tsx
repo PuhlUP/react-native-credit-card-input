@@ -135,7 +135,7 @@ const CreditCardInput = (props: Props) => {
   const numberInput = useRef<TextInput>(null);
 
   useEffect(() => {
-    if (autoFocus) numberInput.current?.focus();
+    if (autoFocus) nameInput.current?.focus();
   }, [autoFocus]);
 
   return (
