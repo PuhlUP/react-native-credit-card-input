@@ -155,7 +155,9 @@ export const useCreditCardForm = (
       };
 
       const newFormState: CreditCardFormState = {
-        number: toStatus(cardValidator.number(newFormattedValues.number)),
+        number: toStatus(
+          cardValidator.number(removeNonNumber(newFormattedValues.number))
+        ),
         expiry: toStatus(
           cardValidator.expirationDate(newFormattedValues.expiry)
         ),
