@@ -1,6 +1,6 @@
 {
-  "name": "react-native-credit-card-input",
-  "version": "1.0.0",
+  "name": "@puhl/react-native-credit-card-input",
+  "version": "1.0.1",
   "description": "React native credit card input component",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.cjs",
@@ -48,14 +48,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sbycrosz/react-native-credit-card-input.git"
+    "url": "git+https://github.com/PuhlUP/react-native-credit-card-input.git"
   },
-  "author": "sbycrosz <sbycrosz@gmail.com> (https://github.com/sbycrosz)",
+  "author": "PuhlUp <lucas8puhl@gmail.com> (https://github.com/PuhlUP/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sbycrosz/react-native-credit-card-input/issues"
+    "url": "https://github.com/PuhlUP/react-native-credit-card-input/issues"
   },
-  "homepage": "https://github.com/sbycrosz/react-native-credit-card-input#readme",
+  "homepage": "https://github.com/PuhlUP/react-native-credit-card-input#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -181,5 +181,8 @@
   "dependencies": {
     "card-validator": "^10.0.0",
     "react-native-flip-card": "^3.5.7"
+  },
+  "directories": {
+    "example": "example"
   }
 }

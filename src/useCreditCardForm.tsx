@@ -9,12 +9,13 @@ export type CreditCardIssuer =
   | 'discover'
   | 'jcb';
 
-export type CreditCardFormField = 'number' | 'expiry' | 'cvc';
+export type CreditCardFormField = 'number' | 'expiry' | 'cvc' | 'name';
 
 export type CreditCardFormValues = {
   number: string;
   expiry: string;
   cvc: string;
+  name: string;
   type?: CreditCardIssuer;
 };
 
@@ -24,6 +25,7 @@ export type CreditCardFormState = {
   number: ValidationState;
   expiry: ValidationState;
   cvc: ValidationState;
+  name: ValidationState;
 };
 
 export type CreditCardFormData = {
@@ -33,9 +35,10 @@ export type CreditCardFormData = {
 };
 
 export type CreditCardFormErrors = {
-  number?: boolean;
-  expiry?: boolean;
-  cvc?: boolean;
+  number?: ValidationState;
+  expiry?: ValidationState;
+  cvc?: ValidationState;
+  name?: ValidationState;
 };
 
 // --- Utilities
@@ -102,12 +105,14 @@ export const useCreditCardForm = (
     number: 'incomplete',
     expiry: 'incomplete',
     cvc: 'incomplete',
+    name: 'incomplete',
   });
 
   const [values, setValues] = useState<CreditCardFormValues>({
     number: '',
     expiry: '',
     cvc: '',
+    name: '',
     type: undefined,
   });
 
@@ -120,14 +125,19 @@ export const useCreditCardForm = (
         [field]: value,
       };
 
-      const numberValidation = cardValidator.number(newValues.number);
+      let numberValidation = cardValidator.number(newValues.number);
+      // let expiryValidation = cardValidator.expirationDate(newValues.expiry);
+      // let cvcValidation = cardValidator.cvv(
+      //   newValues.cvc,
+      //   numberValidation.card?.code.size || 3
+      // );
+      let nameValidation = newValues.name.trim().length > 0;
 
-      // When card issuer cant be detected, use these default (3 digit CVC, 16 digit card number with spaces every 4 digit)
       const cvcMaxLength = numberValidation.card?.code.size || 3;
       const cardNumberGaps = numberValidation.card?.gaps || [4, 8, 12];
-      const cardNumberMaxLength =
-        // Credit card number can vary. Use the longest possible as maximum (otherwise fallback to 16)
-        Math.max(...(numberValidation.card?.lengths || [16]));
+      const cardNumberMaxLength = Math.max(
+        ...(numberValidation.card?.lengths || [16])
+      );
 
       const newFormattedValues = {
         number: formatCardNumber(
@@ -137,25 +147,27 @@ export const useCreditCardForm = (
         ),
         expiry: formatCardExpiry(newValues.expiry),
         cvc: formatCardCVC(newValues.cvc, cvcMaxLength),
+        name: newValues.name,
         type: numberValidation.card?.type as CreditCardIssuer,
       };
 
-      const newFormState = {
+      const newFormState: CreditCardFormState = {
         number: toStatus(cardValidator.number(newFormattedValues.number)),
         expiry: toStatus(
           cardValidator.expirationDate(newFormattedValues.expiry)
         ),
         cvc: toStatus(cardValidator.cvv(newFormattedValues.cvc, cvcMaxLength)),
+        name: nameValidation ? 'valid' : 'invalid',
       };
 
-      const newErrors = {
-        number: newFormState.number === 'invalid',
-        expiry: newFormState.expiry === 'invalid',
-        cvc: newFormState.cvc === 'invalid',
+      const newErrors: CreditCardFormErrors = {
+        number: newFormState.number === 'invalid' ? 'invalid' : undefined,
+        expiry: newFormState.expiry === 'invalid' ? 'invalid' : undefined,
+        cvc: newFormState.cvc === 'invalid' ? 'invalid' : undefined,
+        name: newFormState.name === 'invalid' ? 'invalid' : undefined,
       };
 
       setErrors(newErrors);
-
       setValues(newFormattedValues);
       setFormState(newFormState);
 
@@ -163,7 +175,8 @@ export const useCreditCardForm = (
         valid:
           newFormState.number === 'valid' &&
           newFormState.expiry === 'valid' &&
-          newFormState.cvc === 'valid',
+          newFormState.cvc === 'valid' &&
+          newFormState.name === 'valid',
         values: newFormattedValues,
         status: newFormState,
       });
