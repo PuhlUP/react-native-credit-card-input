@@ -100,7 +100,7 @@ export default function Example() {
         cvc={formData?.values.cvc}
         name={formData?.values.name}
         style={s.cardView}
-        monthYearLabel="Month/Year"
+        monthYearLabel="MÊS/ANO"
       />
 
       {useLiteInput ? (
