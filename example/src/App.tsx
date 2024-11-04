@@ -60,15 +60,15 @@ const toStatusIcon = (status?: ValidationState) =>
 
 const errorMessages = {
   number: {
-    invalid: 'Número do cartão inválido ou incompleto',
+    invalid: 'Número do cartão inválido',
     incomplete: 'Número do cartão incompleto',
   },
   expiry: {
-    invalid: 'Data de validade inválida ou incompleta',
+    invalid: 'Data de validade inválida',
     incomplete: 'Data de validade incompleta',
   },
   cvc: {
-    invalid: 'CVC inválido ou incompleto',
+    invalid: 'CVC inválido',
     incomplete: 'CVC incompleto',
   },
   name: 'Nome do titular é obrigatório',
@@ -109,14 +109,16 @@ export default function Example() {
           style={s.cardInput}
           onChange={setFormData}
           onFocusField={setFocusedField}
-          // Add custom error messages for LiteCreditCardInput if supported
+          // Add custom error messages
           errorMessages={errorMessages}
         />
       ) : (
         <CreditCardInput
+          focusedField={focusedField}
           autoFocus
           requiresName
           style={s.cardInput}
+          formData={formData}
           onChange={setFormData}
           onFocusField={setFocusedField}
           // Pass custom error messages
