@@ -251,6 +251,7 @@ const CreditCardInput = (props: Props) => {
             autoCorrect={false}
             underlineColorAndroid={'transparent'}
             testID="CC_CVC"
+            secureTextEntry
           />
           {handleInputErrorText('cvc')}
         </View>

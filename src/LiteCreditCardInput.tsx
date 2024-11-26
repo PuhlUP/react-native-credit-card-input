@@ -216,6 +216,7 @@ const LiteCreditCardInput = (props: Props) => {
             autoCorrect={false}
             underlineColorAndroid={'transparent'}
             testID="CC_CVC"
+            secureTextEntry
           />
         </View>
       </View>
